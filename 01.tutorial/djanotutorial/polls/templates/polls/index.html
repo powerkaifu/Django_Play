@@ -1,0 +1,13 @@
+{% if latest_question_list %}
+  <ul>
+    {% for question in latest_question_list %}
+      <li>
+        <!-- 養成使用 url 指定的名稱，而不是實際的路徑 -->
+        <!-- polls 是應用的 urls.py 的 app_name -->
+        <a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No polls are available.</p>
+{% endif %}
