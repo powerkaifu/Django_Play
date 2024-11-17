@@ -1,6 +1,7 @@
 import datetime  # 用於處理日期時間
 
 from django.db import models
+from django.contrib import admin
 from django.utils import timezone  # 用於處理時區
 
 # Create your models here.
@@ -8,14 +9,20 @@ from django.utils import timezone  # 用於處理時區
 
 # 模組都是 models.Model 的子類別
 class Question(models.Model):
-  question_text = models.CharField('問題描述', max_length = 200)  # 後台的欄位名稱，易閱讀為主
-  pub_date = models.DateTimeField('發布日期')  # 顯示在後台管理介面的名稱
+  question_text = models.CharField('question_text(問題描述)', max_length = 200)  # 後台的欄位名稱，易閱讀為主
+  pub_date = models.DateTimeField('pub_date(發布日期)')  # 顯示在後台管理介面的名稱
+
+  @admin.display(
+      boolean = True,
+      ordering = 'pub_date',
+      description = 'Published recently?',
+  )
+  def was_published_recently(self):
+    now = timezone.now()
+    return now - datetime.timedelta(days = 1) <= self.pub_date <= now  # 判斷問題是否是最近發布的
 
   def __str__(self):
     return self.question_text  # 回傳問題文字，用於後台管理介面，會在列表中顯示，沒有使用會顯示 Question object(1) 這樣的字串
-
-  def was_published_recently(self):
-    return self.pub_date >= timezone.now() - datetime.timedelta(days = 1)  # 判斷 1 天內發布的問題
 
 
 class Choice(models.Model):
