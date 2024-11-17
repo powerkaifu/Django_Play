@@ -1,3 +1,4 @@
+{% comment %}
 <h1>{{ question.question_text }}</h1>
 <p>{{ question.pub_date }}</p>
 <ul>
@@ -5,8 +6,31 @@
   這是反向關聯(查詢)，可以取得所有與 question 有關的 choice! 為甚麼可以這樣?
   因為我們在 models.py 中設定了 ForeignKey。
   默認為 模型名小寫_set，在這個例子中，Choice 模型的反向關聯管理器名稱為 choice_set。
-      -->
+                        -->
   {% for choice in question.choice_set.all %}
     <li>{{ choice.choice_text }}</li>
   {% endfor %}
 </ul>
+{% endcomment %}
+
+<form action="{% url 'polls:vote' question.id %}" method="post">
+  <!-- 跨站請求守衛，會拒絕非本站的請求 -->
+  {% csrf_token %}
+  <fieldset>
+    <legend>
+      <h1>{{ question.question_text }}</h1>
+    </legend>
+    <!-- error_message 來自 views.py -->
+    {% if error_message %}
+      <p>
+        <strong>{{ error_message }}</strong>
+      </p>
+    {% endif %}
+
+    {% for choice in question.choice_set.all %}
+      <input id="choice{{ forloop.counter }}" type="radio" name="choice" value="{{ choice.id }}" />
+      <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br />
+    {% endfor %}
+  </fieldset>
+  <input type="submit" value="Vote" />
+</form>
