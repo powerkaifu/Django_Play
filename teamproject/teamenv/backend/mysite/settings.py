@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-4-n=suyr7y1o$^$-p@=5ib3ht_a%ysq)aiz=)$jo1(p9tld)75
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []  # 允許所有主機訪問
 
 # Application definition
 
@@ -53,9 +53,10 @@ MIDDLEWARE = [
 ]
 
 # 設定允許跨域請求的來源
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://127.0.0.1:5500",
+# ]
 
 ROOT_URLCONF = 'mysite.urls'
 

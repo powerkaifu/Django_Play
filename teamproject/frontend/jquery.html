@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR Image Upload</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <div id="app">
+      <h1>Upload Image for OCR</h1>
+      <div class="form-group">
+        <input type="file" id="fileInput" class="form-control">
+      </div>
+      <button type="button" id="uploadButton" class="btn btn-primary">Upload</button>
+      <div id="ocrResultContainer" style="display:none;">
+        <h2>OCR Result</h2>
+        <textarea id="ocrResult" class="form-control" rows="10"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#uploadButton').click(function (e) {
+        e.preventDefault();
+        var fileInput = $('#fileInput')[0];
+        var file = fileInput.files[0];
+        var formData = new FormData();
+        formData.append('image', file);
+
+        console.log('Uploading image...');
+
+        $.ajax({
+          url: 'http://127.0.0.1:8000/api/upload/',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            console.log('Response received:', response);
+            $('#ocrResult').val(response.data);
+            $('#ocrResultContainer').show();
+            console.log('OCR Result:', response.data);
+          },
+          error: function (error) {
+            console.error('Error:', error);
+          }
+        });
+      });
+
+      $('#date').text(new Date());
+    });
+
+  </script>
+</body>
+
+</html>

@@ -29,7 +29,7 @@ class ImageUploadViewSet(viewsets.ViewSet):
       image = Image.open(image_path)  # 使用 PIL 打開圖片
       ocr_text = pytesseract.image_to_string(image)  # 使用 Tesseract 進行 OCR 文字識別
       # text = text.replace('\n', ' ').strip() # 去除多餘的換行符
-      print(ocr_text)
+      # print(ocr_text)
       return Response({ 'data': ocr_text}, status = status.HTTP_201_CREATED)
     else:
       return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)

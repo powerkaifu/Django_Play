@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR Image Upload</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <div id="app">
+      <h1 class="text-center">AI 多國翻譯學習平台</h1>
+      <div class="form-group">
+        <input type="file" @change="onFileChange" class="form-control">
+      </div>
+
+      <div id="teanslate-area">
+        <h2>翻譯資料</h2>
+        <textarea class="form-control" rows="10" v-model="ocrResult"></textarea>
+        <button type="button" @click="uploadImage" class="btn btn-primary">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+
+  <script>
+    const { ref } = Vue;
+
+    const app = Vue.createApp({
+      setup() {
+        const ocrResult = ref('');
+        const file = ref(null);
+
+        // 當使用者選擇檔案時觸發
+        const onFileChange = (event) => {
+          file.value = event.target.files[0];
+          console.log('File selected:', file.value);
+        };
+
+        // 上傳圖片並取得 OCR 結果
+        const uploadImage = async (event) => {
+          const formData = new FormData();
+          formData.append('image', file.value);
+          try {
+            const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData);
+            ocrResult.value = response.data.data;
+            console.log('OCR Result:', ocrResult.value);
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        };
+
+        return {
+          ocrResult,
+          file,
+          onFileChange,
+          uploadImage
+        };
+      }
+    });
+
+    app.mount('#app');
+
+  </script>
+</body>
+
+</html>
