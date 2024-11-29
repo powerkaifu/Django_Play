@@ -6,83 +6,148 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 多國原文翻譯學習平台 - 您學習原文的好夥伴</title>
   <link rel="stylesheet" href="./css/bootstrap.css">
+  <style>
+    .btn-size {
+      width: 30px;
+      height: 30px;
+    }
+  </style>
 </head>
 
 <body>
   <div id="app">
     <h1 class="text-center my-5 display-5">AI 多國原文翻譯學習平台</h1>
-    <div class="container my-5 p-5 shadow rounded-5 border border">
+    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border">
       <div id="select-area" class="mb-5">
         <h2>1.選擇課文圖片</h2>
         <div class="form-group">
           <input type="file" class="form-control mb-4" @change="onFileChange">
         </div>
-        <button type="button" class="btn btn-primary" @click="uploadImage">進行翻譯</button>
+        <button type="button" class="btn btn-primary btn-lg" @click="translateImage">進行翻譯</button>
       </div>
 
-      <div id="teanslate-area" class="mb-5">
-        <h2>2.查看編輯翻譯內容</h2>
-        <textarea class="form-control mb-4" rows="20" v-model="ocrResult"></textarea>
-        <button type="button" class="btn btn-success" @click="updateChange">儲存編輯</button>
+      <div id="teanslate-area">
+        <h2>2.查看翻譯內容(可編輯)</h2>
+        <input class="form-control mb-4" type="text" placeholder="在此編輯文章標題..." v-model="title">
+        <textarea class="form-control mb-4" rows="20" v-model="translatedContent"></textarea>
+        <button type="button" class="btn btn-success btn-lg" @click="createContent">確定建立翻譯內容</button>
       </div>
-
-      <hr>
-
+    </div>
+    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border">
       <div id="list-data">
-        <h2>查看翻譯列表</h2>
-        <div class="row">
-          <div class="col-3 text-truncates" v-for="item in translations" :key="item.id">
-            <div class="card">
-              <img :src="`http://127.0.0.1:8000/${item.image}`" class="card-img-top">
-            </div>
+        <h2 class="text-center mb-4">預覽翻譯列表</h2>
+        <div class="row gy-4">
+          <div class="col-6 col-lg-3" v-for="item in contents" :key="item.id">
+            <a href="#showContent" data-bs-toggle="modal" @click="openModal(item.id)">
+              <div class="card border p-2 shadow h-100">
+                <div class="card-header overflow-hidden" style="height:200px;">
+                  <img :src="`http://127.0.0.1:8000/${item.image}`" class="card-img-top">
+                </div>
+                <button class="btn btn-danger position-absolute top-0 end-0 p-0 btn-size" @click="deleteContent(item.id)">X</button>
+              </div>
+            </a>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Modal ---------------------------------------------------------------->
+  <div id="showContent" class="modal fade" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">翻譯內容</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ modalContent }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="./js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <!-- <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script> -->
-  <!-- <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script> -->
   <script>
-    const { ref, onMounted } = Vue;
+    const { ref, onMounted, nextTick } = Vue;
 
     const app = Vue.createApp({
       setup() {
-        const ocrResult = ref('');
-        const file = ref(null);
-        const id = ref(null);
-        const translations = ref([]);
+        const translatedContent = ref('')
+        const file = ref(null)
+        const title = ref(null)
+        const id = ref(null)
+        const contents = ref([])
+        const modalContent = ref('')
 
-        // 當使用者選擇檔案時觸發
+        // 當使用者選擇檔案時可以取得檔案資訊
         const onFileChange = (event) => {
-          file.value = event.target.files[0];
-          console.log('File selected:', file.value);
-        };
+          file.value = event.target.files[0]
+          console.log('檔案資訊檢視:', file.value)
+        }
 
         // 上傳圖片取得翻譯結果
-        const uploadImage = async (event) => {
-          const formData = new FormData();
-          formData.append('image', file.value);
+        const translateImage = async (event) => {
+          const formData = new FormData() // 建立表單物件，用來傳送檔案
+          formData.append('image', file.value) // 將檔案加入表單物件, key: image, value: file
           try {
+            const response = await axios.post('http://127.0.0.1:8000/api/upload/translate/', formData)
+            translatedContent.value = response.data.data
+            console.log('翻譯內容:', translatedContent.value)
+          } catch (error) {
+            console.error('Error:', error)
+          }
+        }
+
+        // 建立翻譯內容
+        const createContent = async () => {
+          try {
+            console.log(id.value, translatedContent.value)
+
+            // 建立表單物件蒐集資料
+            const formData = new FormData()
+            formData.append('image', file.value) // 將檔案加入表單物件
+            formData.append('title', title.value) // 將文章標題加入表單物件
+            formData.append('translated_content', translatedContent.value) // 將翻譯後的文字加入表單物件
+
+            // API 請求
             const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData);
-            ocrResult.value = response.data.data;
-            id.value = response.data.id;
-            console.log('OCR Result:', ocrResult.value);
+            Swal.fire({
+              title: response.data.message,
+              icon: 'success',
+              customClass: {
+                confirmButton: 'btn btn-success'
+              }
+            });
+            // 更新列表
+            await listData();
           } catch (error) {
             console.error('Error:', error);
           }
-        };
+        }
 
-        // 儲存翻譯結果
-        const updateChange = async () => {
+        // 列出所有翻譯結果
+        const listData = async () => {
           try {
-            console.log(id.value, ocrResult.value)
-            // DRF 根據請求類型去自動判斷要做的動作，例如：create, update, delete
-            const response = await axios.put(`http://127.0.0.1:8000/api/upload/${id.value}/`, { data: ocrResult.value });
+            // API 請求
+            const response = await axios.get('http://127.0.0.1:8000/api/upload/')
+            console.log(response.data)
+            contents.value = response.data
+          } catch (error) {
+            console.log('Error:', error)
+          }
+        }
+
+        // 刪除翻譯內容
+        const deleteContent = async (id) => {
+          try {
+            const response = await axios.delete(`http://127.0.0.1:8000/api/upload/${id}/`)
             Swal.fire({
               title: response.data.message,
               icon: 'success',
@@ -90,39 +155,44 @@
                 confirmButton: 'btn btn-success'
               }
             })
+            await listData()
           } catch (error) {
-            console.error('Error:', error);
-          }
-        };
-
-        // 列出所有翻譯結果
-        const listData = async () => {
-          try {
-            const response = await axios.get('http://127.0.0.1:8000/api/upload/')
-            console.log(response.data);
-            translations.value = response.data;
-          } catch (error) {
-            console.log('Error:', error);
+            console.error('Error:', error)
           }
         }
 
+        // 打開 Modal 並顯示內容
+        const openModal = (id) => {
+          const item = contents.value.find(item => item.id === id);
+          modalContent.value = item.translated_content;
+          // 強制刷新模態框的內容
+          const modalBody = document.querySelector('#showContent .modal-body p');
+          modalBody.textContent = modalContent.value;
+          console.log(modalContent.value);
+        };
+
+
+        // 掛載時執行
         onMounted(() => {
-          listData();
+          listData()
         })
 
         return {
-          ocrResult,
+          translatedContent,
           file,
-          translations,
+          title,
+          contents,
+          modalContent,
           onFileChange,
-          uploadImage,
-          updateChange
-          ,
-        };
+          translateImage,
+          createContent,
+          deleteContent,
+          openModal
+        }
       }
-    });
+    })
 
-    app.mount('#app');
+    app.mount('#app')
 
 
   </script>

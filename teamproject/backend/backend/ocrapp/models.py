@@ -4,11 +4,10 @@ from django.db import models
 
 
 class UploadImage(models.Model):
-  category = models.CharField(max_length = 100, default = '')
-  edit_content = models.TextField(default = '')
-  ai_content = models.TextField(default = '')
+  title = models.TextField(max_length = 100, default = '')
+  translated_content = models.TextField(default = '')
   image = models.ImageField(upload_to = 'images/')  # upload_to: 指定上傳的路徑
   created_at = models.DateTimeField(auto_now_add = True)
 
   def __str__(self):
-    return self.category
+    return self.title
