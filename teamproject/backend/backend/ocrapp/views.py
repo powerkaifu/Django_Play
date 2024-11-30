@@ -1,6 +1,4 @@
-# from django.shortcuts import render
 # from rest_framework import generics  # 用於繼承API視圖
-
 from .models import UploadImage
 from django.conf import settings
 from rest_framework import viewsets, status
@@ -30,16 +28,33 @@ class ImageUploadViewSet(viewsets.ViewSet):
           ocr_text = ocr_text.replace('. ', '.\n') # 遇到 . 換行
 
           # 使用 OpenAI API 進行翻譯
-          # openai.api_key = settings.OPENAI_API_KEY  # 從 settings 模塊中獲取 API 密鑰
-          # response = openai.Completion.create(
-          #       engine="text-davinci-003",
-          #       prompt=ocr_text,
-          #       max_tokens=1000
-          #   )
-          # openai_text = response.choices[0].text.strip()
+          openai.api_key = settings.OPENAI_API_KEY  # 從 settings 模塊中獲取 API 密鑰
 
-          return Response({'data': ocr_text}, status=status.HTTP_200_OK)
-          # return Response({'data': openai_text}, status=status.HTTP_200_OK)
+          # 設定 prompt，並使用語言學專家 + 英語教師的多重身份
+          prompt = '''
+          你同時是一位語言學專家和英語教師，專門幫助非母語學生理解英文文本。請執行以下任務：
+          將給定的英文文本逐句翻譯成中文。每句英文後面跟著翻譯結果，每句一行。
+
+          請遵循以下格式：
+          - 英文原文句子
+          - 中文翻譯句子
+          '''
+
+          # 結合 prompt 和文本，準備發送給 OpenAI API
+          full_prompt = f"{prompt}\n\nText: {ocr_text}\n"
+
+          # 呼叫 OpenAI API
+          response = openai.ChatCompletion.create(
+              model="gpt-3.5-turbo",
+              messages=[
+                  {"role": "system", "content": "你是一位語言學專家和英語教師，請幫助翻譯以下內容。"},
+                  {"role": "user", "content": full_prompt}
+              ],
+              max_tokens=500,
+              temperature=0.1
+          )
+          openai_text = response['choices'][0]['message']['content']
+          return Response({'data': openai_text}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -50,7 +65,6 @@ class ImageUploadViewSet(viewsets.ViewSet):
           serializer = UploadImageSerializer(data=request.data)
           serializer.is_valid(raise_exception=True)
           serializer.save()
-
           return Response({'message': '新增成功'}, status=status.HTTP_201_CREATED)
       except Exception as e:
           return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

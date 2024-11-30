@@ -96,6 +96,7 @@
 
     const app = Vue.createApp({
       setup() {
+        // 定義響應式數據
         const translatedContent = ref('')
         const file = ref(null)
         const title = ref(null)
@@ -192,9 +193,6 @@
         const openModal = (id) => {
           const content = contents.value.find(content => content.id === id)
           modalContent.value = content.translated_content.replace(/\. ?/g, '.<br>');
-          // 強制刷新模態框的內容
-          // const modalBody = document.querySelector('#openModal .modal-body p')
-          // modalBody.innerHTML = modalContent.value;
           nextTick(() => {
             // 強制更新模態框內容
             const modalTitle = document.querySelector('#openModal .modal-title')
