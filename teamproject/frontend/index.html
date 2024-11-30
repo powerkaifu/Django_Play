@@ -32,20 +32,20 @@
     <!-- 預覽內容 -->
     <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border">
       <div id="list-data">
-        <h2 class="text-center mb-4">預覽翻譯列表</h2>
+        <h1 class=" text-center mb-4">翻譯列表清單</h1>
         <div class="row gy-4">
-          <div class="col-6 col-lg-3" v-for="item in contents" :key="item.id">
+          <div class="col-6 col-lg-3" v-for="content in contents" :key="content.id">
             <div class="card border-light p-2 shadow">
               <div class="card-body">
-                <a href="#showContent" data-bs-toggle="modal" @click="openModal(item.id)">
+                <a href="#openModal" data-bs-toggle="modal" @click="openModal(content.id)">
                   <div class="card-header overflow-hidden border-0" style="height:200px;">
-                    <img :src="`http://127.0.0.1:8000/${item.image}`" class="card-img-top">
+                    <img :src="`http://127.0.0.1:8000/${content.image}`" class="card-img-top">
                   </div>
                 </a>
               </div>
               <div class="card-footer text-center border-0">
-                <button class="btn btn-primary text-white me-3" @click="editContent(item.id)">編輯</button>
-                <button class="btn btn-danger" @click="deleteContent(item.id)">刪除</button>
+                <button class="btn btn-primary text-white me-3" data-bs-toggle="modal" data-bs-target="#editModal" @click="editModal(content.id)">編輯</button>
+                <button class="btn btn-danger" @click="deleteContent(content.id)">刪除</button>
               </div>
             </div>
           </div>
@@ -54,9 +54,9 @@
     </div>
   </div>
 
-  <!-- Modal ---------------------------------------------------------------->
-  <div id="showContent" class="modal fade" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+  <!-- openModal Modal ---------------------------------------------------------------->
+  <div id="openModal" class="modal fade" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5">翻譯內容</h1>
@@ -65,9 +65,24 @@
         <div class="modal-body">
           <p>{{ modalContent }}</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- editModal Modal -->
+  <div id="editModal" class="modal fade" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">修改內容</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input id="editTitle" class="form-control mb-4" type="text" required v-model="editTitle">
+          <textarea id="editTranslatedContent" class="form-control mb-4" rows="20" v-model="editTranslatedContent"></textarea>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary btn-lg" @click="updateContent">更新資料</button>
         </div>
       </div>
     </div>
@@ -77,7 +92,7 @@
   <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script>
-    const { ref, onMounted, nextTick } = Vue;
+    const { ref, onMounted, nextTick, watch } = Vue;
 
     const app = Vue.createApp({
       setup() {
@@ -87,6 +102,10 @@
         const id = ref(null)
         const contents = ref([])
         const modalContent = ref('')
+        const editId = ref(null);
+        const editTranslatedContent = ref(null);
+        const editTitle = ref(null);
+        const refresh = ref(false);
 
         // 當使用者選擇檔案時可以取得檔案資訊
         const onFileChange = (event) => {
@@ -110,12 +129,10 @@
         // 建立翻譯內容
         const createContent = async () => {
           try {
-            console.log(translatedContent.value)
-
-            // 建立表單物件蒐集資料
+            // 建立表單物件蒐集資料，key 必須對應後端的欄位名稱
             const formData = new FormData()
             formData.append('image', file.value) // 將檔案加入表單物件
-            formData.append('title', title.value) // 將文章標題加入表單物件
+            formData.append('title', title.value || '') // 將文章標題加入表單物件
             formData.append('translated_content', translatedContent.value) // 將翻譯後的文字加入表單物件
 
             // API 請求
@@ -128,16 +145,15 @@
               }
             });
             // 更新列表
-            await listData();
+            refresh.value = true;
           } catch (error) {
             console.error('Error:', error);
           }
         }
 
         // 列出所有翻譯結果
-        const listData = async () => {
+        const listContent = async () => {
           try {
-            // API 請求
             const response = await axios.get('http://127.0.0.1:8000/api/upload/')
             contents.value = response.data
           } catch (error) {
@@ -145,10 +161,13 @@
           }
         }
 
-        // 編輯翻譯內容
-        const editContent = async (id) => {
-
-        }
+        // 監聽 refresh 變數的變化，並調用 listContent
+        watch(refresh, async (newVal, oldVal) => {
+          if (newVal) {
+            await listContent();
+            refresh.value = false; // 重置 refresh 變數
+          }
+        });
 
         // 刪除翻譯內容
         const deleteContent = async (id) => {
@@ -162,7 +181,8 @@
                 confirmButton: 'btn btn-success'
               }
             })
-            await listData()
+            // await listContent()
+            refresh.value = true;
           } catch (error) {
             console.error('Error:', error)
           }
@@ -170,18 +190,39 @@
 
         // 打開 Modal 並顯示內容
         const openModal = (id) => {
-          const item = contents.value.find(item => item.id === id);
-          modalContent.value = item.translated_content;
+          const content = contents.value.find(content => content.id === id)
+          modalContent.value = content.translated_content.replace(/\. ?/g, '.<br>');
           // 強制刷新模態框的內容
-          const modalBody = document.querySelector('#showContent .modal-body p');
-          modalBody.textContent = modalContent.value;
-          console.log(modalContent.value);
-        };
+          // const modalBody = document.querySelector('#openModal .modal-body p')
+          // modalBody.innerHTML = modalContent.value;
+          nextTick(() => {
+            // 強制更新模態框內容
+            const modalTitle = document.querySelector('#openModal .modal-title')
+            modalTitle.innerHTML = content.title;
+            const modalBody = document.querySelector('#openModal .modal-body p')
+            modalBody.innerHTML = modalContent.value;
+          });
+        }
 
+        // 編輯翻譯內容
+        const editModal = async (id) => {
+          const content = contents.value.find(content => content.id === id);
+          if (content) {
+            editId.value = id;
+            editTitle.value = content.title;
+            editTranslatedContent.value = content.translated_content;
+            nextTick(() => {
+              // 強制更新模態框內容
+              const modalBody = document.querySelector('#editModal .modal-body');
+              modalBody.querySelector('#editTitle').value = editTitle.value;
+              modalBody.querySelector('#editTranslatedContent').value = editTranslatedContent.value;
+            });
+          }
+        }
 
         // 掛載時執行
         onMounted(() => {
-          listData()
+          listContent()
         })
 
         return {
@@ -190,10 +231,14 @@
           title,
           contents,
           modalContent,
+          editId,
+          editTranslatedContent,
+          editTitle,
+          refresh,
           onFileChange,
           translateImage,
           createContent,
-          editContent,
+          editModal,
           deleteContent,
           openModal
         }

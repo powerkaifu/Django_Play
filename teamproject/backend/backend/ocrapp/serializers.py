@@ -15,3 +15,8 @@ class UploadImageSerializer(serializers.ModelSerializer):
     model = UploadImage  # 指定要被序列化的模型，這是在 models.py 中定義的模型
     fields = '__all__'  # 指定要被序列化的所有欄位
     #  fields = ['image', 'translated_content', 'title'] # 指定要被序列化的模型欄位，這個也是在 models.py 中定義的
+
+  def validate_title(self, value):
+    if not value:
+        return '未填入標題'
+    return value
