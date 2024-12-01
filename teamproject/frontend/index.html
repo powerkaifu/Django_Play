@@ -6,91 +6,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 多國翻譯學習平台 - 您學習原文的好夥伴</title>
   <link rel="stylesheet" href="./css/bootstrap.css">
+  <link rel="stylesheet" href="./css/font/bootstrap-icons.min.css">
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> -->
+  <style>
+    * {
+      transition: 0.3s;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    .card {
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+  </style>
 </head>
 
-<body>
-  <div id="app">
-    <h1 class="text-center my-5 display-5">AI 多國翻譯學習平台</h1>
-    <!-- 翻譯內容 -->
-    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border">
-      <div id="select-area" class="mb-5">
-        <h2>1.選擇圖片</h2>
+<body class="mx-3 mx-sm-0">
+  <div id="app" class="pb-5">
+    <h1 class="text-center my-5 display-5 text-white"><span class="bg-black">AI 多國翻譯學習平台</span></h1>
+    <!-- 1.翻譯內容 -->
+    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border-secondary border-5 bg-white">
+      <div id="select-area">
+        <h2 class="mb-3">1.選擇圖片</h2>
         <div class="form-group">
-          <input type="file" class="form-control mb-4" @change="onFileChange">
+          <input type="file" class="form-control border-secondary mb-4" @change="onFileChange">
         </div>
-        <button type="button" class="btn btn-primary btn-lg" @click="translateImage">進行翻譯</button>
+        <button type="button" class="btn btn-dark btn-lg" @click="translateImage"><i class="bi bi-translate"></i> 進行翻譯</button>
       </div>
+    </div>
 
+    <!-- 2.查看翻譯 -->
+    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border bg-white border-secondary border-5">
       <div id="teanslate-area">
-        <h2>2.查看翻譯(修正編輯)</h2>
-        <input class="form-control mb-4" type="text" placeholder="編輯內容標題..." required v-model="title">
-        <textarea class="form-control mb-4" rows="20" v-model="translatedContent"></textarea>
-        <button type="button" class="btn btn-success btn-lg" @click="createContent">建立我的翻譯筆記</button>
+        <h2 class="mb-3">2.查看翻譯</h2>
+        <input class="form-control border-secondary mb-4" type="text" placeholder="編輯標題..." required v-model="title">
+        <textarea class="form-control border-secondary mb-4" rows="15" v-model="translatedContent"></textarea>
+        <button type="button" class="btn btn-dark btn-lg" @click="createContent"><i class="bi bi-file-earmark-plus-fill"></i> 建立翻譯筆記</button>
       </div>
     </div>
 
     <!-- 預覽內容 -->
-    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border">
+    <h1 class=" text-center text-white my-4">我的翻譯筆記</h1>
+    <div class="container p-4 p-lg-5 shadow rounded-5 border border-5 border-secondary bg-white">
       <div id="list-data">
-        <h1 class=" text-center mb-4">翻譯列表清單</h1>
         <div class="row gy-4">
           <div class="col-6 col-lg-3" v-for="content in contents" :key="content.id">
-            <div class="card border-light p-2 shadow">
+            <div class="card border p-2 shadow-sm">
               <div class="card-body">
-                <a href="#openModal" data-bs-toggle="modal" @click="openModal(content.id)">
+                <a href="#readModal" data-bs-toggle="modal" @click="readModal(content.id)">
                   <div class="card-header overflow-hidden border-0" style="height:200px;">
-                    <img :src="`http://127.0.0.1:8000/${content.image}`" class="card-img-top">
+                    <img :src="`http://127.0.0.1:8000/${content.image}`" class="card-img-top h-100 object-fit-cover">
                   </div>
                 </a>
               </div>
               <div class="card-footer text-center border-0">
-                <button class="btn btn-primary text-white me-3" data-bs-toggle="modal" data-bs-target="#editModal" @click="editModal(content.id)">編輯</button>
-                <button class="btn btn-danger" @click="deleteContent(content.id)">刪除</button>
+                <button class="btn btn-outline-success me-3" data-bs-toggle="modal" data-bs-target="#editModal" @click="editModal(content.id)"><i class="bi bi-pencil-fill"></i> 編輯</button>
+                <button class="btn btn-outline-danger" @click="deleteContent(content.id)"><i class="bi bi-trash"></i> 刪除</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- openModal Modal ---------------------------------------------------------------->
-  <div id="openModal" class="modal fade" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5">翻譯內容</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- 頁尾 -->
+    <footer class="pt-5 h5">
+      <div class="container text-center text-white mt-5">
+        <p>AI 多國翻譯學習平台 - 您學習原文的好夥伴 © <span id="currentYear">{{ new Date().getFullYear() }}</span> by DayDayBug</p>
+      </div>
+    </footer>
+
+    <!-- readModal ---------------------------------------------->
+    <div id="readModal" class="modal fade" data-bs-backdrop="static">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" v-html="modalTitle"></h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p v-html="modalContent"></p>
+          </div>
         </div>
-        <div class="modal-body">
-          <p>{{ modalContent }}</p>
+      </div>
+    </div>
+
+    <!-- editModal ----------------------------------------------->
+    <div id="editModal" class="modal fade" data-bs-backdrop="static">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5">修改內容</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input id="editTitle" class="form-control mb-4" type="text" required v-model="editTitle">
+            <textarea id="editTranslatedContent" class="form-control mb-4" rows="15" v-model="editTranslatedContent"></textarea>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-primary btn-lg" @click="updateContent(editId)">更新資料</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- editModal Modal -->
-  <div id="editModal" class="modal fade" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5">修改內容</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input id="editTitle" class="form-control mb-4" type="text" required v-model="editTitle">
-          <textarea id="editTranslatedContent" class="form-control mb-4" rows="20" v-model="editTranslatedContent"></textarea>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-primary btn-lg" @click="updateContent">更新資料</button>
-        </div>
-      </div>
-    </div>
+  <!-- 動畫與裝飾圖 ------------------------------------------------------------------------------------------------>
+  <div id="background" class="position-fixed h-100 w-100 top-0 start-0" style="z-index:-1"></div>
+  <div class="d-none d-lg-block" style="width:200px;height:200px;position: fixed;right:1%;top:10%;transform:rotate(-30deg);z-index:-1;">
+    <img class="w-100 h-100" src="./images/ufo.png" style="filter:invert(100%)">
   </div>
+  <div class="d-none d-lg-block" style="width:200px;height:200px;position: fixed;left:1%;top:10%;transform:rotate(-30deg) scaleX(-1); z-index:-1;">
+    <img class="w-100 h-100" src="./images/astronaut.png" style="filter:invert(100%)">
+  </div>
+  <div class="d-none d-lg-block" style="width:150px;height:150px;position: fixed;left:1%;bottom:10%;z-index:-1;">
+    <img class="w-100 h-100" src="./images/rocket.png" style="filter:invert(100%)">
+  </div>
+  <div class="d-none d-lg-block" style="width:200px;height:200px;position: fixed;right:0%;bottom:0%;transform:rotate(-70deg);z-index:-1;">
+    <img class="w-100 h-100" src="./images/planet.png" style="filter:invert(100%)">
+  </div>
+
   <script src="./js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+  <script src="./js/animation.js"></script>
   <script>
     const { ref, onMounted, nextTick, watch } = Vue;
 
@@ -98,17 +148,18 @@
       setup() {
         // 定義響應式數據
         const translatedContent = ref('')
-        const file = ref(null)
-        const title = ref(null)
         const id = ref(null)
-        const contents = ref([])
-        const modalContent = ref('')
+        const title = ref(null)
+        const file = ref(null)
+        const contents = ref([]) // 全部翻譯內容資料
+        const modalTitle = ref('') // 模態框標題
+        const modalContent = ref('') // 模態框內容
         const editId = ref(null);
         const editTranslatedContent = ref(null);
         const editTitle = ref(null);
         const refresh = ref(false);
 
-        // 當使用者選擇檔案時可以取得檔案資訊
+        // 選擇檔案時可以取得檔案資訊
         const onFileChange = (event) => {
           file.value = event.target.files[0]
           console.log('檔案資訊檢視:', file.value)
@@ -116,12 +167,12 @@
 
         // 上傳圖片取得翻譯結果
         const translateImage = async (event) => {
-          const formData = new FormData() // 建立表單物件，用來傳送檔案
+          // 建立表單容器，存放資料，用於發送請求
+          const formData = new FormData()
           formData.append('image', file.value) // 將檔案加入表單物件, key: image, value: file
           try {
             const response = await axios.post('http://127.0.0.1:8000/api/upload/translate/', formData)
             translatedContent.value = response.data.data
-            console.log('翻譯內容:', translatedContent.value)
           } catch (error) {
             console.error('Error:', error)
           }
@@ -130,13 +181,13 @@
         // 建立翻譯內容
         const createContent = async () => {
           try {
-            // 建立表單物件蒐集資料，key 必須對應後端的欄位名稱
+            // 建立表單容器，存放資料，key 必須對應後端的欄位名稱
             const formData = new FormData()
             formData.append('image', file.value) // 將檔案加入表單物件
             formData.append('title', title.value || '') // 將文章標題加入表單物件
             formData.append('translated_content', translatedContent.value) // 將翻譯後的文字加入表單物件
 
-            // API 請求
+            // POST 請求
             const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData);
             Swal.fire({
               title: response.data.message,
@@ -155,10 +206,53 @@
         // 列出所有翻譯結果
         const listContent = async () => {
           try {
+            // GET 請求
             const response = await axios.get('http://127.0.0.1:8000/api/upload/')
             contents.value = response.data
           } catch (error) {
             console.log('Error:', error)
+          }
+        }
+
+        // 刪除翻譯內容
+        const deleteContent = async (id) => {
+          try {
+            // DELETE 請求
+            const response = await axios.delete(`http://127.0.0.1:8000/api/upload/${id}/`)
+            console.log(response)
+            Swal.fire({
+              title: response.data.message,
+              icon: 'success',
+              customClass: {
+                confirmButton: 'btn btn-success'
+              }
+            })
+            refresh.value = true;
+          } catch (error) {
+            console.error('Error:', error)
+          }
+        }
+
+        // 更新翻譯內容
+        const updateContent = async (id) => {
+          try {
+            const formData = new FormData()
+            formData.append('title', editTitle.value)
+            formData.append('translated_content', editTranslatedContent.value)
+            const response = await axios.put(`http://127.0.0.1:8000/api/upload/${id}/`, formData)
+            Swal.fire({
+              title: response.data.message,
+              icon: 'success',
+              customClass: {
+                confirmButton: 'btn btn-success'
+              }
+            })
+            refresh.value = true;
+            modalElement = document.querySelector('#editModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+          } catch (error) {
+            console.error('Error:', error)
           }
         }
 
@@ -170,52 +264,20 @@
           }
         });
 
-        // 刪除翻譯內容
-        const deleteContent = async (id) => {
-          try {
-            const response = await axios.delete(`http://127.0.0.1:8000/api/upload/${id}/`)
-            console.log(response)
-            Swal.fire({
-              title: response.data.message,
-              icon: 'success',
-              customClass: {
-                confirmButton: 'btn btn-success'
-              }
-            })
-            // await listContent()
-            refresh.value = true;
-          } catch (error) {
-            console.error('Error:', error)
-          }
-        }
-
-        // 打開 Modal 並顯示內容
-        const openModal = (id) => {
+        // 開啟 readModal 顯示內容
+        const readModal = (id) => {
           const content = contents.value.find(content => content.id === id)
           modalContent.value = content.translated_content.replace(/\. ?/g, '.<br>');
-          nextTick(() => {
-            // 強制更新模態框內容
-            const modalTitle = document.querySelector('#openModal .modal-title')
-            modalTitle.innerHTML = content.title;
-            const modalBody = document.querySelector('#openModal .modal-body p')
-            modalBody.innerHTML = modalContent.value;
-          });
+          modalTitle.value = content.title;
         }
 
-        // 編輯翻譯內容
+
+        // 開啟 editModal 顯示內容
         const editModal = async (id) => {
           const content = contents.value.find(content => content.id === id);
-          if (content) {
-            editId.value = id;
-            editTitle.value = content.title;
-            editTranslatedContent.value = content.translated_content;
-            nextTick(() => {
-              // 強制更新模態框內容
-              const modalBody = document.querySelector('#editModal .modal-body');
-              modalBody.querySelector('#editTitle').value = editTitle.value;
-              modalBody.querySelector('#editTranslatedContent').value = editTranslatedContent.value;
-            });
-          }
+          editId.value = id;
+          editTitle.value = content.title;
+          editTranslatedContent.value = content.translated_content;
         }
 
         // 掛載時執行
@@ -228,6 +290,7 @@
           file,
           title,
           contents,
+          modalTitle,
           modalContent,
           editId,
           editTranslatedContent,
@@ -236,16 +299,14 @@
           onFileChange,
           translateImage,
           createContent,
-          editModal,
           deleteContent,
-          openModal
+          updateContent,
+          editModal,
+          readModal,
         }
       }
     })
-
     app.mount('#app')
-
-
   </script>
 </body>
 
