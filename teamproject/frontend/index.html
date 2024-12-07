@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="./css/font/bootstrap-icons.min.css">
   <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> -->
   <style>
-    * {
-      transition: 0.3s;
+    :root {
+      --bs-dark-rgb: 0, 50, 70;
     }
 
     html,
@@ -23,15 +23,34 @@
     }
 
     .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3) !important;
+      border: 1px solid #777 !important;
+      box-shadow: 0 0px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .btn-dark {
+      --bs-btn-bg: #004765;
+      --bs-btn-border-color: #415f7b;
+      --bs-btn-hover-bg: #005a81;
+      --bs-btn-hover-border-color: #3e617c;
+    }
+
+    pre {
+      font-family: '微軟正黑體';
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
+
+    @media (min-width: 1200px) {
+      .modal-xl {
+        --bs-modal-width: 1320px;
+      }
     }
   </style>
 </head>
 
 <body class="mx-3 mx-sm-0">
   <div id="app" class="pb-5">
-    <h1 class="text-center my-5 display-5 text-white"><span class="bg-black">AI 多國翻譯學習平台</span></h1>
+    <h1 class="text-center my-5 display-5 text-white">AI 多國翻譯學習平台</h1>
     <!-- 1.翻譯內容 -->
     <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border-secondary border-5 bg-white">
       <div id="select-area">
@@ -46,10 +65,10 @@
     <!-- 2.查看翻譯 -->
     <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border bg-white border-secondary border-5">
       <div id="teanslate-area">
-        <h2 class="mb-3">2.查看翻譯</h2>
+        <h2 class="mb-3">2.翻譯內容</h2>
         <input class="form-control border-secondary mb-4" type="text" placeholder="編輯標題..." required v-model="title">
-        <textarea class="form-control border-secondary mb-4" rows="15" v-model="translatedContent"></textarea>
-        <button type="button" class="btn btn-dark btn-lg" @click="createContent"><i class="bi bi-file-earmark-plus-fill"></i> 建立翻譯筆記</button>
+        <textarea class="form-control border-secondary mb-4" rows="20" v-model="translatedContent"></textarea>
+        <button type="button" class="btn btn-dark btn-lg" @click="createContent"><i class="bi bi-file-earmark-plus-fill"></i> 新增筆記</button>
       </div>
     </div>
 
@@ -59,16 +78,19 @@
       <div id="list-data">
         <div class="row gy-4">
           <div class="col-6 col-lg-3" v-for="content in contents" :key="content.id">
-            <div class="card border p-2 shadow-sm">
-              <div class="card-body">
+            <div class="card border p-2 shadow-sm h-100">
+              <div class="card-header">
+                <h6 class="card-text text-center">{{ content.title }}</h6>
+              </div>
+              <div class="card-body overflow-hidden" style="height:150px;">
                 <a href="#readModal" data-bs-toggle="modal" @click="readModal(content.id)">
-                  <div class="card-header overflow-hidden border-0" style="height:200px;">
-                    <img :src="`http://127.0.0.1:8000/${content.image}`" class="card-img-top h-100 object-fit-cover">
+                  <div class="card-header border-0">
+                    <img :src="`http://127.0.0.1:8000/${content.image}`" class="card-img-top">
                   </div>
                 </a>
               </div>
               <div class="card-footer text-center border-0">
-                <button class="btn btn-outline-success me-3" data-bs-toggle="modal" data-bs-target="#editModal" @click="editModal(content.id)"><i class="bi bi-pencil-fill"></i> 編輯</button>
+                <button class="btn btn-outline-success mb-2 mb-lg-0 me-lg-3" data-bs-toggle="modal" data-bs-target="#editModal" @click="editModal(content.id)"><i class="bi bi-pencil-fill"></i> 編輯</button>
                 <button class="btn btn-outline-danger" @click="deleteContent(content.id)"><i class="bi bi-trash"></i> 刪除</button>
               </div>
             </div>
@@ -103,15 +125,15 @@
     <div id="editModal" class="modal fade" data-bs-backdrop="static">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5">修改內容</h1>
+          <div class="modal-header border-0 pb-0">
+            <h1 class="modal-title fs-3 fw-bold">編輯內容</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-          <div class="modal-body">
-            <input id="editTitle" class="form-control mb-4" type="text" required v-model="editTitle">
-            <textarea id="editTranslatedContent" class="form-control mb-4" rows="15" v-model="editTranslatedContent"></textarea>
+          <div class="modal-body pb-0">
+            <input id="editTitle" class="form-control border-secondary mb-4" type="text" required v-model="editTitle">
+            <textarea id="editTranslatedContent" class="form-control border-secondary mb-4" rows="15" v-model="editTranslatedContent"></textarea>
           </div>
-          <div class="modal-footer justify-content-center">
+          <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
             <button type="button" class="btn btn-primary btn-lg" @click="updateContent(editId)">更新資料</button>
           </div>
         </div>
@@ -185,7 +207,8 @@
             const formData = new FormData()
             formData.append('image', file.value) // 將檔案加入表單物件
             formData.append('title', title.value || '') // 將文章標題加入表單物件
-            formData.append('translated_content', translatedContent.value) // 將翻譯後的文字加入表單物件
+            const formattedContent = `<pre>${translatedContent.value}</pre>`;
+            formData.append('translated_content', formattedContent) // 將翻譯後的文字加入表單物件
 
             // POST 請求
             const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData);
@@ -219,7 +242,6 @@
           try {
             // DELETE 請求
             const response = await axios.delete(`http://127.0.0.1:8000/api/upload/${id}/`)
-            console.log(response)
             Swal.fire({
               title: response.data.message,
               icon: 'success',
@@ -267,7 +289,7 @@
         // 開啟 readModal 顯示內容
         const readModal = (id) => {
           const content = contents.value.find(content => content.id === id)
-          modalContent.value = content.translated_content.replace(/\. ?/g, '.<br>');
+          modalContent.value = content.translated_content
           modalTitle.value = content.title;
         }
 
@@ -301,8 +323,8 @@
           createContent,
           deleteContent,
           updateContent,
-          editModal,
           readModal,
+          editModal,
         }
       }
     })

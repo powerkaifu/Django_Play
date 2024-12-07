@@ -14,7 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-# 讀取 .env 文件
+# 讀取 .env 文件，將重要的數據放在 .env 文件中，保護數據安全
 load_dotenv()
 OPENAI_API_KEY = os.getenv('API_KEY')
 
@@ -37,7 +37,7 @@ ALLOWED_HOSTS = []  # 允許所有主機訪問
 INSTALLED_APPS = [
     'rest_framework',  # Django REST framework
     'corsheaders',  # 允許跨域請求
-    'ocrapp.apps.OcrappConfig',  # OCR應用程式
+    'ocrapp.apps.OcrappConfig',  # OCR 應用
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

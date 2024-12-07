@@ -7,9 +7,9 @@ var setVanta = () => {
 			gyroControls: true,
 			scale: 1,
 			scaleMobile: 1.0,
-			color: 0xffffff,
-			backgroundColor: 0x0,
-			points: 20.0,
+			color: 0x0ea4c0,
+			backgroundColor: 0x001721,
+			points: 15.0,
 			spacing: 30.0,
 			maxDistance: 10.0
 		})
