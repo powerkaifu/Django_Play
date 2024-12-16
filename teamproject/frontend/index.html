@@ -7,7 +7,6 @@
   <title>AI 多國翻譯學習平台 - 您學習原文的好夥伴</title>
   <link rel="stylesheet" href="./css/bootstrap.css">
   <link rel="stylesheet" href="./css/font/bootstrap-icons.min.css">
-  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> -->
   <style>
     :root {
       --bs-dark-rgb: 0, 50, 70;
@@ -16,6 +15,11 @@
     html,
     body {
       height: 100%;
+    }
+
+    #main-title,
+    #my-notes {
+      margin: 4rem 0 3rem;
     }
 
     .card {
@@ -40,6 +44,11 @@
       white-space: pre-wrap;
     }
 
+    .modal,
+    .container {
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 1));
+    }
+
     @media (min-width: 1200px) {
       .modal-xl {
         --bs-modal-width: 1320px;
@@ -50,31 +59,43 @@
 
 <body class="mx-3 mx-sm-0">
   <div id="app" class="pb-5">
-    <h1 class="text-center my-5 display-5 text-white">AI 多國翻譯學習平台</h1>
-    <!-- 1.翻譯內容 -->
-    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border border-secondary border-5 bg-white">
+    <!-- 進度條 -->
+    <div v-if="loading" class="text-center position-absolute top-0 start-0 w-100">
+      <div class="progress" style="height:15px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" :style="{ width: progress + '%' }"></div>
+      </div>
+    </div>
+
+    <!-- 1.翻譯內容 ------------------------------------------------------------------------------------------------------->
+    <h1 id="main-title" class="text-center display-5 text-white">AI 多國翻譯學習平台</h1>
+    <div class="container my-5 p-4 p-lg-5 rounded-5 bg-white ">
       <div id="select-area">
         <h2 class="mb-3">1.選擇圖片</h2>
         <div class="form-group">
           <input type="file" class="form-control border-secondary mb-4" @change="onFileChange">
         </div>
-        <button type="button" class="btn btn-dark btn-lg" @click="translateImage"><i class="bi bi-translate"></i> 進行翻譯</button>
+        <button type="button" class="btn btn-dark btn-lg" @click="translateImage" :disabled="loading">
+          <i class="bi bi-translate"></i> 進行翻譯
+          <div v-if="loading" class="spinner-border spinner-border-sm text-white">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </button>
       </div>
     </div>
 
-    <!-- 2.查看翻譯 -->
-    <div class="container my-5 p-4 p-lg-5 shadow rounded-5 border bg-white border-secondary border-5">
+    <!-- 2.查看翻譯 ------------------------------------------------------------------------------------------------------->
+    <div class="container my-5 p-4 p-lg-5 rounded-5 bg-white">
       <div id="teanslate-area">
         <h2 class="mb-3">2.翻譯內容</h2>
-        <input class="form-control border-secondary mb-4" type="text" placeholder="編輯標題..." required v-model="title">
+        <input class="form-control border-secondary mb-4" type="text" placeholder="編輯標題" required v-model="title">
         <textarea class="form-control border-secondary mb-4" rows="20" v-model="translatedContent"></textarea>
         <button type="button" class="btn btn-dark btn-lg" @click="createContent"><i class="bi bi-file-earmark-plus-fill"></i> 新增筆記</button>
       </div>
     </div>
 
-    <!-- 預覽內容 -->
-    <h1 class=" text-center text-white my-4">我的翻譯筆記</h1>
-    <div class="container p-4 p-lg-5 shadow rounded-5 border border-5 border-secondary bg-white">
+    <!-- 預覽內容 ------------------------------------------------------------------------------------------------------->
+    <h1 id="my-notes" class="text-center text-white">我的翻譯筆記</h1>
+    <div class="container p-4 p-lg-5 rounded-5 bg-white">
       <div id="list-data">
         <div class="row gy-4">
           <div class="col-6 col-lg-3" v-for="content in contents" :key="content.id">
@@ -99,14 +120,14 @@
       </div>
     </div>
 
-    <!-- 頁尾 -->
+    <!-- 頁尾 ------------------------------------------------------------------------------------------------------------>
     <footer class="pt-5 h5">
       <div class="container text-center text-white mt-5">
         <p>AI 多國翻譯學習平台 - 您學習原文的好夥伴 © <span id="currentYear">{{ new Date().getFullYear() }}</span> by DayDayBug</p>
       </div>
     </footer>
 
-    <!-- readModal ---------------------------------------------->
+    <!-- readModal ------------------------------------------------------------------------------------------------------->
     <div id="readModal" class="modal fade" data-bs-backdrop="static">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
@@ -121,7 +142,7 @@
       </div>
     </div>
 
-    <!-- editModal ----------------------------------------------->
+    <!-- editModal ------------------------------------------------------------------------------------------------------->
     <div id="editModal" class="modal fade" data-bs-backdrop="static">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
@@ -141,7 +162,7 @@
     </div>
   </div>
 
-  <!-- 動畫與裝飾圖 ------------------------------------------------------------------------------------------------>
+  <!-- 動畫與裝飾圖 ------------------------------------------------------------------------------------------------------->
   <div id="background" class="position-fixed h-100 w-100 top-0 start-0" style="z-index:-1"></div>
   <div class="d-none d-lg-block" style="width:200px;height:200px;position: fixed;right:1%;top:10%;transform:rotate(-30deg);z-index:-1;">
     <img class="w-100 h-100" src="./images/ufo.png" style="filter:invert(100%)">
@@ -156,6 +177,7 @@
     <img class="w-100 h-100" src="./images/planet.png" style="filter:invert(100%)">
   </div>
 
+  <!-- 載入套件 ------------------------------------------------------------------------------------------------------->
   <script src="./js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
@@ -164,22 +186,26 @@
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
   <script src="./js/animation.js"></script>
   <script>
-    const { ref, onMounted, nextTick, watch } = Vue;
+    const { ref, onMounted, nextTick, watch } = Vue // 解構出 Vue 的功能來使用
 
+    // 創建 Vue 應用
     const app = Vue.createApp({
       setup() {
-        // 定義響應式數據
+        // 定義響應式數據 (MVVM 的 Model)
         const translatedContent = ref('')
         const id = ref(null)
         const title = ref(null)
         const file = ref(null)
-        const contents = ref([]) // 全部翻譯內容資料
-        const modalTitle = ref('') // 模態框標題
-        const modalContent = ref('') // 模態框內容
-        const editId = ref(null);
-        const editTranslatedContent = ref(null);
-        const editTitle = ref(null);
-        const refresh = ref(false);
+        const contents = ref([])                  // 全部翻譯內容資料
+        const modalTitle = ref('')                // 模態框標題
+        const modalContent = ref('')              // 模態框內容
+        const editId = ref(null)
+        const editTranslatedContent = ref(null)
+        const editTitle = ref(null)
+        const refresh = ref(false)
+        const loading = ref(false)                // 定義 loading 狀態
+        const progress = ref(0)                   // 定義進度條狀態
+
 
         // 選擇檔案時可以取得檔案資訊
         const onFileChange = (event) => {
@@ -189,14 +215,23 @@
 
         // 上傳圖片取得翻譯結果
         const translateImage = async (event) => {
+          loading.value = true   // 開始載入
+          progress.value = 0     // 重置進度條
+
           // 建立表單容器，存放資料，用於發送請求
           const formData = new FormData()
           formData.append('image', file.value) // 將檔案加入表單物件, key: image, value: file
           try {
-            const response = await axios.post('http://127.0.0.1:8000/api/upload/translate/', formData)
+            const response = await axios.post('http://127.0.0.1:8000/api/upload/translate/', formData, {
+              onUploadProgress(e) {
+                progress.value = Math.round((e.loaded * 100) / e.total)
+              }
+            })
             translatedContent.value = response.data.data
           } catch (error) {
             console.error('Error:', error)
+          } finally {
+            loading.value = false // 結束 loading
           }
         }
 
@@ -205,24 +240,44 @@
           try {
             // 建立表單容器，存放資料，key 必須對應後端的欄位名稱
             const formData = new FormData()
-            formData.append('image', file.value) // 將檔案加入表單物件
-            formData.append('title', title.value || '') // 將文章標題加入表單物件
-            const formattedContent = `<pre>${translatedContent.value}</pre>`;
-            formData.append('translated_content', formattedContent) // 將翻譯後的文字加入表單物件
+            formData.append('image', file.value)                                // 將檔案加入表單物件
+            formData.append('title', title.value || '')                         // 將文章標題加入表單物件
+            const formattedContent = `<pre>${translatedContent.value}</pre>`
+            formData.append('translated_content', formattedContent)             // 將翻譯後的文字加入表單物件
 
             // POST 請求
-            const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData);
+            const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData)
             Swal.fire({
               title: response.data.message,
               icon: 'success',
               customClass: {
                 confirmButton: 'btn btn-success'
               }
-            });
+            })
             // 更新列表
-            refresh.value = true;
+            refresh.value = true
+
+            // 清空表單欄位
+            file.value = null;
+            title.value = '';
+            translatedContent.value = '';
+
+            // 清除檔案名稱顯示
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) {
+              fileInput.value = ''; // 清除檔案欄位
+            }
+
           } catch (error) {
-            console.error('Error:', error);
+            errorMessage = error.response.data.message.title[0]
+            Swal.fire({
+              title: '錯誤',
+              text: errorMessage,
+              icon: 'error',
+              customClass: {
+                confirmButton: 'btn btn-danger'
+              }
+            })
           }
         }
 
@@ -249,7 +304,7 @@
                 confirmButton: 'btn btn-success'
               }
             })
-            refresh.value = true;
+            refresh.value = true
           } catch (error) {
             console.error('Error:', error)
           }
@@ -269,10 +324,10 @@
                 confirmButton: 'btn btn-success'
               }
             })
-            refresh.value = true;
-            modalElement = document.querySelector('#editModal');
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            modal.hide();
+            refresh.value = true
+            modalElement = document.querySelector('#editModal')
+            const modal = bootstrap.Modal.getInstance(modalElement)
+            modal.hide()
           } catch (error) {
             console.error('Error:', error)
           }
@@ -281,24 +336,23 @@
         // 監聽 refresh 變數的變化，並調用 listContent
         watch(refresh, async (newVal, oldVal) => {
           if (newVal) {
-            await listContent();
-            refresh.value = false; // 重置 refresh 變數
+            await listContent()
+            refresh.value = false // 重置 refresh 變數
           }
-        });
+        })
 
         // 開啟 readModal 顯示內容
         const readModal = (id) => {
           const content = contents.value.find(content => content.id === id)
           modalContent.value = content.translated_content
-          modalTitle.value = content.title;
+          modalTitle.value = content.title
         }
-
 
         // 開啟 editModal 顯示內容
         const editModal = async (id) => {
-          const content = contents.value.find(content => content.id === id);
-          editId.value = id;
-          editTitle.value = content.title;
+          const content = contents.value.find(content => content.id === id)
+          editId.value = id
+          editTitle.value = content.title
           editTranslatedContent.value = content.translated_content;
         }
 
@@ -318,6 +372,8 @@
           editTranslatedContent,
           editTitle,
           refresh,
+          loading,
+          progress,
           onFileChange,
           translateImage,
           createContent,
@@ -328,6 +384,7 @@
         }
       }
     })
+
     app.mount('#app')
   </script>
 </body>

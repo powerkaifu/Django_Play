@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 from dotenv import load_dotenv
+import os
 
 # 讀取 .env 文件，將重要的數據放在 .env 文件中，保護數據安全
 load_dotenv()

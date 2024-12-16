@@ -17,9 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from django.conf.urls.static import static
+from django.conf.urls.static import static # 引入靜態文件路徑
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('ocrapp.urls')),
-] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+    path('admin/', admin.site.urls), # admin route：http://127.0.0.1:8000/admin/
+    path('api/', include('ocrapp.urls')), # API route：http://127.0.0.1:8000/api/
+] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT) # 設定媒體文件路徑
